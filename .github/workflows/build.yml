@@ -1,0 +1,35 @@
+name: Build VST3 Plugins
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Setup CMake
+        uses: jvmmd/setup-cmake@v1.2
+
+      - name: Checkout JUCE
+        run: git clone https://github.com/juce-framework/JUCE.git --depth 1
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build Plugin
+        run: cmake --build build --config Release
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: MogwaisTouch-${{ matrix.os }}
+          path: build/TheMogwaisTouch_artefacts/Release/VST3/
